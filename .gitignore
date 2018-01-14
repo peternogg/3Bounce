@@ -30,3 +30,9 @@
 *.exe
 *.out
 *.app
+
+# Ignore the build folder, and the outputs
+build/*
+*.3dsx
+*.elf
+*.smdh
