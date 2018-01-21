@@ -5,13 +5,13 @@
 
 class ScreenLog {
 public:
-	ScreenLog();
-	~ScreenLog();
+    ScreenLog();
+    ~ScreenLog();
 
-	void Print(std::string message);
-	void Print(const char* message);
-	void PrintLine(std::string message);
-	void PrintLine(const char* message);
+    void Print(std::string message);
+    void Print(const char* message);
+    void PrintLine(std::string message);
+    void PrintLine(const char* message);
 private:
-	PrintConsole _console;
+    PrintConsole _console;
 };

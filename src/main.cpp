@@ -11,27 +11,27 @@ using std::cout;
 using std::ifstream;
 
 int main(int argc, char** argv) {
-	// Setup
-	gfxInitDefault();
+    // Setup
+    gfxInitDefault();
 
-	srand(100);
+    srand(100);
 
-	ScreenLog log;
-	Engine engine(&log);
+    ScreenLog log;
+    Engine engine(&log);
 
-	bool shouldQuit = false;
+    bool shouldQuit = false;
 
-	engine.InitializeGraphics();
+    engine.InitializeGraphics();
 
-	while(aptMainLoop() && !shouldQuit) {
+    while(aptMainLoop() && !shouldQuit) {
 
-		hidScanInput();
-		if (KEY_START & hidKeysDown())
-			shouldQuit = true;
+        hidScanInput();
+        if (KEY_START & hidKeysDown())
+            shouldQuit = true;
 
-		engine.Update();
-		engine.Draw();
-	}
+        engine.Update();
+        engine.Draw();
+    }
 
-	gfxExit();
+    gfxExit();
 }
