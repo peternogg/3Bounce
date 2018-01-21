@@ -2,6 +2,10 @@
 
 #include <iostream>
 #include <fstream>
+#include <stdlib.h>
+
+#include "ScreenLog.h"
+#include "Engine.h"
 
 using std::cout;
 using std::ifstream;
@@ -9,27 +13,15 @@ using std::ifstream;
 int main(int argc, char** argv) {
 	// Setup
 	gfxInitDefault();
-	consoleInit(GFX_TOP, nullptr);
+
+	srand(100);
+
+	ScreenLog log;
+	Engine engine(&log);
 
 	bool shouldQuit = false;
 
-	std::ifstream input("file.txt");
-	char c;
-
-	if (input.is_open()) {
-		std::cout << "input open\n";
-		std::cout << "file.txt contents:\n";
-
-		// Copy chars from input to stdout
-		while(input.good()) {
-			c = input.get();
-			std::cout.put(c);
-		}
-	} else {
-		std::cout << "file bad\n";
-	}
-
-	input.close();
+	engine.InitializeGraphics();
 
 	while(aptMainLoop() && !shouldQuit) {
 
@@ -37,6 +29,8 @@ int main(int argc, char** argv) {
 		if (KEY_START & hidKeysDown())
 			shouldQuit = true;
 
+		engine.Update();
+		engine.Draw();
 	}
 
 	gfxExit();
