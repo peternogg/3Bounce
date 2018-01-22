@@ -40,8 +40,8 @@ INCLUDES    :=  include
 ARCH    :=  -march=armv6k -mtune=mpcore -mfloat-abi=hard -mtp=soft
 
 CFLAGS  :=  -g -Wall -mword-relocations \
-            -fomit-frame-pointer -ffunction-sections \
-            $(ARCH)
+			-fomit-frame-pointer -ffunction-sections \
+			$(ARCH)
 
 CFLAGS  +=  $(INCLUDE) -DARM11 -D_3DS
 
@@ -70,7 +70,7 @@ export OUTPUT   :=  $(CURDIR)/$(TARGET)
 export TOPDIR   :=  $(CURDIR)
 
 export VPATH    :=  $(foreach dir,$(SOURCES),$(CURDIR)/$(dir)) \
-            $(foreach dir,$(DATA),$(CURDIR)/$(dir))
+			$(foreach dir,$(DATA),$(CURDIR)/$(dir))
 
 export DEPSDIR  :=  $(CURDIR)/$(BUILD)
 
@@ -86,44 +86,44 @@ BINFILES    :=  $(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.*)))
 #---------------------------------------------------------------------------------
 ifeq ($(strip $(CPPFILES)),)
 #---------------------------------------------------------------------------------
-    export LD   :=  $(CC)
+	export LD   :=  $(CC)
 #---------------------------------------------------------------------------------
 else
 #---------------------------------------------------------------------------------
-    export LD   :=  $(CXX)
+	export LD   :=  $(CXX)
 #---------------------------------------------------------------------------------
 endif
 #---------------------------------------------------------------------------------
 
 export OFILES   :=  $(addsuffix .o,$(BINFILES)) \
-            $(PICAFILES:.v.pica=.shbin.o) $(SHLISTFILES:.shlist=.shbin.o) \
-            $(CPPFILES:.cpp=.o) $(CFILES:.c=.o) $(SFILES:.s=.o)
+			$(PICAFILES:.v.pica=.shbin.o) $(SHLISTFILES:.shlist=.shbin.o) \
+			$(CPPFILES:.cpp=.o) $(CFILES:.c=.o) $(SFILES:.s=.o)
 
 export INCLUDE  :=  $(foreach dir,$(INCLUDES),-I$(CURDIR)/$(dir)) \
-            $(foreach dir,$(LIBDIRS),-I$(dir)/include) \
-            -I$(CURDIR)/$(BUILD)
+			$(foreach dir,$(LIBDIRS),-I$(dir)/include) \
+			-I$(CURDIR)/$(BUILD)
 
 export LIBPATHS :=  $(foreach dir,$(LIBDIRS),-L$(dir)/lib)
 
 ifeq ($(strip $(ICON)),)
-    icons := $(wildcard *.png)
-    ifneq (,$(findstring $(TARGET).png,$(icons)))
-        export APP_ICON := $(TOPDIR)/$(TARGET).png
-    else
-        ifneq (,$(findstring icon.png,$(icons)))
-            export APP_ICON := $(TOPDIR)/icon.png
-        endif
-    endif
+	icons := $(wildcard *.png)
+	ifneq (,$(findstring $(TARGET).png,$(icons)))
+		export APP_ICON := $(TOPDIR)/$(TARGET).png
+	else
+		ifneq (,$(findstring icon.png,$(icons)))
+			export APP_ICON := $(TOPDIR)/icon.png
+		endif
+	endif
 else
-    export APP_ICON := $(TOPDIR)/$(ICON)
+	export APP_ICON := $(TOPDIR)/$(ICON)
 endif
 
 ifeq ($(strip $(NO_SMDH)),)
-    export _3DSXFLAGS += --smdh=$(CURDIR)/$(TARGET).smdh
+	export _3DSXFLAGS += --smdh=$(CURDIR)/$(TARGET).smdh
 endif
 
 ifneq ($(ROMFS),)
-    export _3DSXFLAGS += --romfs=$(CURDIR)/$(ROMFS)
+	export _3DSXFLAGS += --romfs=$(CURDIR)/$(ROMFS)
 endif
 
 .PHONY: $(BUILD) clean all
@@ -132,13 +132,13 @@ endif
 all: $(BUILD)
 
 $(BUILD):
-    @[ -d $@ ] || mkdir -p $@
-    @$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
+	@[ -d $@ ] || mkdir -p $@
+	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
 
 #---------------------------------------------------------------------------------
 clean:
-    @echo clean ...
-    @rm -fr $(BUILD) $(TARGET).3dsx $(OUTPUT).smdh $(TARGET).elf
+	@echo clean ...
+	@rm -fr $(BUILD) $(TARGET).3dsx $(OUTPUT).smdh $(TARGET).elf
 
 
 #---------------------------------------------------------------------------------
@@ -162,32 +162,32 @@ $(OUTPUT).elf   :   $(OFILES)
 #---------------------------------------------------------------------------------
 %.bin.o :   %.bin
 #---------------------------------------------------------------------------------
-    @echo $(notdir $<)
-    @$(bin2o)
+	@echo $(notdir $<)
+	@$(bin2o)
 
 #---------------------------------------------------------------------------------
 # rules for assembling GPU shaders
 #---------------------------------------------------------------------------------
 define shader-as
-    $(eval CURBIN := $(patsubst %.shbin.o,%.shbin,$(notdir $@)))
-    picasso -o $(CURBIN) $1
-    bin2s $(CURBIN) | $(AS) -o $@
-    echo "extern const u8" `(echo $(CURBIN) | sed -e 's/^\([0-9]\)/_\1/' | tr . _)`"_end[];" > `(echo $(CURBIN) | tr . _)`.h
-    echo "extern const u8" `(echo $(CURBIN) | sed -e 's/^\([0-9]\)/_\1/' | tr . _)`"[];" >> `(echo $(CURBIN) | tr . _)`.h
-    echo "extern const u32" `(echo $(CURBIN) | sed -e 's/^\([0-9]\)/_\1/' | tr . _)`_size";" >> `(echo $(CURBIN) | tr . _)`.h
+	$(eval CURBIN := $(patsubst %.shbin.o,%.shbin,$(notdir $@)))
+	picasso -o $(CURBIN) $1
+	bin2s $(CURBIN) | $(AS) -o $@
+	echo "extern const u8" `(echo $(CURBIN) | sed -e 's/^\([0-9]\)/_\1/' | tr . _)`"_end[];" > `(echo $(CURBIN) | tr . _)`.h
+	echo "extern const u8" `(echo $(CURBIN) | sed -e 's/^\([0-9]\)/_\1/' | tr . _)`"[];" >> `(echo $(CURBIN) | tr . _)`.h
+	echo "extern const u32" `(echo $(CURBIN) | sed -e 's/^\([0-9]\)/_\1/' | tr . _)`_size";" >> `(echo $(CURBIN) | tr . _)`.h
 endef
 
 %.shbin.o : %.v.pica %.g.pica
-    @echo $(notdir $^)
-    @$(call shader-as,$^)
+	@echo $(notdir $^)
+	@$(call shader-as,$^)
 
 %.shbin.o : %.v.pica
-    @echo $(notdir $<)
-    @$(call shader-as,$<)
+	@echo $(notdir $<)
+	@$(call shader-as,$<)
 
 %.shbin.o : %.shlist
-    @echo $(notdir $<)
-    @$(call shader-as,$(foreach file,$(shell cat $<),$(dir $<)/$(file)))
+	@echo $(notdir $<)
+	@$(call shader-as,$(foreach file,$(shell cat $<),$(dir $<)/$(file)))
 
 -include $(DEPENDS)
 
