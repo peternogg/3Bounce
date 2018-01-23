@@ -4,8 +4,6 @@
 #include <citro3d.h>
 #include <stdlib.h>
 
-#include <algorithm> // std::min
-
 #include "ScreenLog.h"
 
 // Shader info
@@ -44,10 +42,12 @@ private:
     s8 _projectionInputHandle;
     u64 _frameCount;
     C3D_Mtx _projectionMatrix;
-
-    vertex vertex_list[3] = {
-        { 200.0f, 200.0f, 0.5f, 0.0f, 0.0f, 0.0f },
-        { 100.0f, 40.0f, 0.5f,  0.0f, 0.0f, 0.0f },
-        { 300.0f, 40.0f, 0.5f,  0.0f, 0.0f, 0.0f },
-    };
+    vertex* _vertex_buffer;
 };
+
+static const vertex vertex_list[3] = {
+            { 200.0f, 200.0f, 0.5f, 0.0f, 0.0f, 0.0f },
+            { 100.0f, 40.0f, 0.5f,  0.0f, 0.0f, 0.0f },
+            { 300.0f, 40.0f, 0.5f,  0.0f, 0.0f, 0.0f },
+};
+
