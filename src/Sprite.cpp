@@ -9,14 +9,14 @@ Sprite::Sprite(const Point& size, const Point& texTopLeft, const Point& texBotto
     float texHeight = texBottomRight.y - texTopLeft.y;
 
     // Triangle 1
-    _vertices[0] = { size.x, 0, texTopLeft.x + texWidth, texTopLeft.x };
+    _vertices[0] = { 0, 0, texTopLeft.x, texTopLeft.y };
     _vertices[1] = { 0, size.y, texTopLeft.x, texTopLeft.y + texHeight };
-    _vertices[2] = { 0, 0, texTopLeft.x, texTopLeft.y };
+    _vertices[2] = { size.x, 0, texTopLeft.x + texWidth, texTopLeft.x };
 
     // Triangle 2
-    _vertices[3] = _vertices[0];
+    _vertices[3] = _vertices[1];
     _vertices[4] = { size.x, size.y, texTopLeft.x + texWidth, texTopLeft.y + texHeight };
-    _vertices[5] = _vertices[1];
+    _vertices[5] = _vertices[2];
 }
 
 void Sprite::MoveBy(Point diff) {

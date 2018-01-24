@@ -68,7 +68,7 @@ void Engine::InitializeGraphics() {
     //AttrInfo_AddLoader(attrInfo, 1, GPU_FLOAT, 2); // Vertex coords
     AttrInfo_AddLoader(attrInfo, 1, GPU_FLOAT, 2); // v1 = Vertex Color
 
-    Mtx_OrthoTilt(&_projectionMatrix, 0.0, 400.0, 0.0, 240.0, 0.0, 1.0, true);
+    Mtx_OrthoTilt(&_projectionMatrix, 0.0, 400.0, 240.0, 0.0, 0.0, 1.0, true);
 
     // Configure fragment shader to pass color thru
     textureEnvironment = C3D_GetTexEnv(0);

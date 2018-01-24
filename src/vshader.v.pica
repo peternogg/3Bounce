@@ -1,4 +1,4 @@
-; Uniforms
+; Uniforms - projection matrix
 .fvec projection[4]
 
 ; Constants
@@ -7,17 +7,18 @@
 
 ; Outputs
 .out outpos position
-; .out outtc0 texcoord0
+.out outtc0 texcoord0
 .out outclr color.rgba
 
-; Inputs (defined as aliases for convenience)
+; Inputs (registers are vn)
 .alias inpos v0
-;.alias intex v1
-.alias incolor v1
+.alias intex v1
+;.alias incolor v2
 
 .proc main
-	; Put sprites at (x, y, 0.5)
-	; Saves a float per vertex
+	; Put sprites at (x, y, 0.1)
+	; Saves a float per vertex by forcing z to 0.1
+	; (it fits into the matrix)
 	mov r0.xy, inpos
 	mov r0.zw, vertexMask
 
@@ -27,8 +28,9 @@
 	dp4 outpos.z, projection[2], r0
 	dp4 outpos.w, projection[3], r0
 
- 	;mov outtc0, intex
- 	mov outclr, incolor
+	; Pass thru texture coords, color info
+ 	mov outtc0, intex
+ 	mov outclr, numbers.wwww ; Force white, opaque
 
 	end
 .end
