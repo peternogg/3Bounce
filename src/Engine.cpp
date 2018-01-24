@@ -1,16 +1,26 @@
 #include "Engine.h"
 
 Engine::Engine(ScreenLog* log) 
-    : _log(log), _target(nullptr), _frameCount(0), _vertex_buffer(nullptr) {
+    : _log(log), _target(nullptr), _frameCount(0), _spriteBuffer(nullptr), _sprite(nullptr) {
+
+    Point spriteSize = { 100, 100 };
+    Point middlePosition = { 400 / 2 - 50, 240 / 2 - 50};
+
     _log->PrintLine("Engine created");
     
-    // Copy data from vertex_list to _vertex_buffer in linear RAM
-    _vertex_buffer = (vertex*)linearAlloc(sizeof(vertex_list));
-    memcpy(_vertex_buffer, vertex_list, sizeof(vertex_list));
+    // Get data for sprite vertices in linear ram
+    _spriteBuffer = (Vertex*)linearAlloc(sizeof(Vertex) * Sprite::VerticesPerSprite());
+
+    _sprite = new Sprite(spriteSize, {0, 0}, {1, 1}, _spriteBuffer);
+    _sprite->MoveTo(middlePosition);
 }
 
 Engine::~Engine() {
-    // Destroy _log
+    delete _sprite;
+    linearFree(_spriteBuffer);
+
+    _sprite = nullptr;
+    _spriteBuffer = nullptr;
 }
 
 void Engine::InitializeGraphics() {
@@ -54,9 +64,9 @@ void Engine::InitializeGraphics() {
     // 0 -> v0, 1 -> v1, etc
     // So the line here is "v0 will recieve a 3 floats" which are placed into
     // v0's x, y, and z components
-    AttrInfo_AddLoader(attrInfo, 0, GPU_FLOAT, 3); // v0 = Vertex position
+    AttrInfo_AddLoader(attrInfo, 0, GPU_FLOAT, 2); // v0 = Vertex position
     //AttrInfo_AddLoader(attrInfo, 1, GPU_FLOAT, 2); // Vertex coords
-    AttrInfo_AddLoader(attrInfo, 1, GPU_FLOAT, 3); // v1 = Vertex Color
+    AttrInfo_AddLoader(attrInfo, 1, GPU_FLOAT, 2); // v1 = Vertex Color
 
     Mtx_OrthoTilt(&_projectionMatrix, 0.0, 400.0, 0.0, 240.0, 0.0, 1.0, true);
 
@@ -69,7 +79,7 @@ void Engine::InitializeGraphics() {
     bufferInfo = C3D_GetBufInfo();
     BufInfo_Init(bufferInfo);
 
-    code = BufInfo_Add(bufferInfo, _vertex_buffer, sizeof(vertex), 2, 0x10);
+    code = BufInfo_Add(bufferInfo, _spriteBuffer, sizeof(Vertex), 2, 0x10);
 
     if (code < 0)
         _log->PrintLine("!! ERROR !!: BufInfo_Add returned < 0");
@@ -78,33 +88,12 @@ void Engine::InitializeGraphics() {
 }
 
 void Engine::Update() {
-    //_log->PrintLine("Updating...");
+    // Move the sprite in a circle around the screen
+    _spriteAngle += TWO_PI / 120; // Rotate in a circle every ~2s (assuming 60fps)
 
-    // Make the colors change slowly
-    for (int i = 0; i < 3; i++) {
-        _vertex_buffer[i].r += 0.001f;
-        if (_vertex_buffer[i].r > 1.0f) _vertex_buffer[i].r = 0.0f;
+    Point diff = { std::cos(2 * _spriteAngle), std::sin(_spriteAngle) };
 
-        _vertex_buffer[i].g += 0.001f;
-        if (_vertex_buffer[i].g > 1.0f) _vertex_buffer[i].g = 0.0f;
-
-        _vertex_buffer[i].b += 0.001f;
-        if (_vertex_buffer[i].b > 1.0f) _vertex_buffer[i].b = 0.0f;
-    }
-
-    if (rand() % 100 == 0) {
-        _log->PrintLine("Messing with colors!");
-        // Choose a vertex and increase its color values
-        int chosenVertex = rand() % 3;
-        _vertex_buffer[chosenVertex].r *= 1.1;
-        _vertex_buffer[chosenVertex].g *= 1.2;
-        _vertex_buffer[chosenVertex].b *= 1.3;
-    }
-
-    // Move the top vertex across the screen
-    _vertex_buffer[0].x -= 1.0f;
-    if (_vertex_buffer[0].x <= 0)
-        _vertex_buffer[0].x = 400.0f;
+    _sprite->MoveBy(diff);
 }
 
 
@@ -129,7 +118,7 @@ void Engine::Draw() {
     // }
     // C3D_ImmDrawEnd();
 
-    C3D_DrawArrays(GPU_TRIANGLES, 0, sizeof(vertex_list)); // _vertex_buffer is as big as vertex_list
+    C3D_DrawArrays(GPU_TRIANGLES, 0, sizeof(Vertex) * Sprite::VerticesPerSprite());
 
     C3D_FrameEnd(0);
 }

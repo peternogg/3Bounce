@@ -3,8 +3,12 @@
 #include <3ds.h>
 #include <citro3d.h>
 #include <stdlib.h>
+#include <cmath>
 
 #include "ScreenLog.h"
+#include "Point.h"
+#include "Vertex.h"
+#include "Sprite.h"
 
 // Shader info
 // Generated at runtime
@@ -18,11 +22,10 @@
                                        GX_TRANSFER_SCALING(GX_TRANSFER_SCALE_NO))
 
 #define BUFFER_CLEAR_COLOR 0x6495EDFF
+#define TWO_PI 2.0f * 3.14159f
 
 // Adapted + guided by https://github.com/tommai78101/homebrew/wiki/Version-002:-Core-Engine
 // and by devkitPro 3DS graphics examples
-
-typedef struct { float x, y, z; float r, g, b; } vertex;
 
 class Engine {
 public:
@@ -33,21 +36,21 @@ public:
     void Draw();
 
     void InitializeGraphics();
-
 private:
     ScreenLog* _log;
+
+    // Drawing/Graphics stuff
     C3D_RenderTarget* _target;
     DVLB_s* _shaderBinary;
     shaderProgram_s _shaderProgram;
     s8 _projectionInputHandle;
-    u64 _frameCount;
     C3D_Mtx _projectionMatrix;
-    vertex* _vertex_buffer;
-};
-
-static const vertex vertex_list[3] = {
-            { 200.0f, 200.0f, 0.5f, 0.0f, 0.0f, 0.0f },
-            { 100.0f, 40.0f, 0.5f,  0.0f, 0.0f, 0.0f },
-            { 300.0f, 40.0f, 0.5f,  0.0f, 0.0f, 0.0f },
+    
+    // Frames since first draw
+    u64 _frameCount;
+    
+    Vertex* _spriteBuffer;
+    Sprite* _sprite;
+    float _spriteAngle;
 };
 
