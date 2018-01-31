@@ -39,6 +39,9 @@ INCLUDES    :=  include
 #---------------------------------------------------------------------------------
 ARCH    :=  -march=armv6k -mtune=mpcore -mfloat-abi=hard -mtp=soft
 
+LODEPNG_FLAGS := -DLODEPNG_NO_COMPILE_ENCODER -DLODEPNG_NO_COMPILE_DISK \
+				-DLODEPNG_NO_COMPILE_ANCILLARY_CHUNKS -DLODEPNG_NO_COMPILE_ERROR_TEXT 
+
 CFLAGS  :=  -g -Wall -mword-relocations \
 			-fomit-frame-pointer -ffunction-sections \
 			$(ARCH)
@@ -161,6 +164,7 @@ $(OUTPUT).elf   :   $(OFILES)
 # you need a rule like this for each extension you use as binary data
 #---------------------------------------------------------------------------------
 %.bin.o :   %.bin
+%.png.o :   %.png
 #---------------------------------------------------------------------------------
 	@echo $(notdir $<)
 	@$(bin2o)

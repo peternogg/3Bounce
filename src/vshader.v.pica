@@ -2,8 +2,8 @@
 .fvec projection[4]
 
 ; Constants
-.constf numbers(0.0, 0.1, 1.0, -1.0)
-.alias vertexMask numbers.xxyz ; (0, 0, 1, 1)
+.constf numbers(0.0, 0.5, 1.0, -1.0)
+.alias vertexMask numbers.xxyz ; (0, 0, 0.5, 1)
 
 ; Outputs
 .out outpos position
@@ -13,13 +13,12 @@
 ; Inputs (registers are vn)
 .alias inpos v0
 .alias intex v1
-;.alias incolor v2
 
 .proc main
 	; Put sprites at (x, y, 0.1)
 	; Saves a float per vertex by forcing z to 0.1
 	; (it fits into the matrix)
-	mov r0.xy, inpos
+	mov r0.xy, inpos.xy
 	mov r0.zw, vertexMask
 
 	; outpos = projectionMatrix * inpos
@@ -28,9 +27,8 @@
 	dp4 outpos.z, projection[2], r0
 	dp4 outpos.w, projection[3], r0
 
-	; Pass thru texture coords, color info
+	; Pass thru texture coords
+	mov outclr, intex
  	mov outtc0, intex
- 	mov outclr, numbers.wwww ; Force white, opaque
-
 	end
 .end

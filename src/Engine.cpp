@@ -1,26 +1,23 @@
 #include "Engine.h"
 
-Engine::Engine(ScreenLog* log) 
-    : _log(log), _target(nullptr), _frameCount(0), _spriteBuffer(nullptr), _sprite(nullptr) {
+Engine* Engine::_instance = nullptr;
 
-    Point spriteSize = { 100, 100 };
-    Point middlePosition = { 400 / 2 - 50, 240 / 2 - 50};
+Engine::Engine(ScreenLog* log) 
+    : _log(log), _target(nullptr), _VBO(nullptr), _spritesheet(), _frameCount(0), _spriteCount(0), _objects() {
+
+    if (_instance == nullptr)
+        _instance = this;
 
     _log->PrintLine("Engine created");
     
     // Get data for sprite vertices in linear ram
-    _spriteBuffer = (Vertex*)linearAlloc(sizeof(Vertex) * Sprite::VerticesPerSprite());
-
-    _sprite = new Sprite(spriteSize, {0, 0}, {1, 1}, _spriteBuffer);
-    _sprite->MoveTo(middlePosition);
+    _VBO = (Vertex*)linearAlloc(sizeof(Vertex) * Sprite::VerticesPerSprite() * MAX_SPRITES);
 }
 
 Engine::~Engine() {
-    delete _sprite;
-    linearFree(_spriteBuffer);
+    linearFree(_VBO);
 
-    _sprite = nullptr;
-    _spriteBuffer = nullptr;
+    _VBO = nullptr;
 }
 
 void Engine::InitializeGraphics() {
@@ -65,21 +62,26 @@ void Engine::InitializeGraphics() {
     // So the line here is "v0 will recieve a 3 floats" which are placed into
     // v0's x, y, and z components
     AttrInfo_AddLoader(attrInfo, 0, GPU_FLOAT, 2); // v0 = Vertex position
-    //AttrInfo_AddLoader(attrInfo, 1, GPU_FLOAT, 2); // Vertex coords
-    AttrInfo_AddLoader(attrInfo, 1, GPU_FLOAT, 2); // v1 = Vertex Color
+    AttrInfo_AddLoader(attrInfo, 1, GPU_FLOAT, 2); // v1 = Texture coordinates
 
     Mtx_OrthoTilt(&_projectionMatrix, 0.0, 400.0, 240.0, 0.0, 0.0, 1.0, true);
 
+    _log->PrintLine("Loading spritesheet...");
+
+    LoadSpritesheet();
+
+    _log->PrintLine("Loaded spritesheet");
+
     // Configure fragment shader to pass color thru
     textureEnvironment = C3D_GetTexEnv(0);
-    C3D_TexEnvSrc(textureEnvironment, C3D_Both, GPU_PRIMARY_COLOR, 0, 0);
+    C3D_TexEnvSrc(textureEnvironment, C3D_Both, GPU_TEXTURE0, 0, 0);
     C3D_TexEnvOp(textureEnvironment, C3D_Both, 0, 0, 0);
     C3D_TexEnvFunc(textureEnvironment, C3D_Both, GPU_REPLACE);
 
     bufferInfo = C3D_GetBufInfo();
     BufInfo_Init(bufferInfo);
 
-    code = BufInfo_Add(bufferInfo, _spriteBuffer, sizeof(Vertex), 2, 0x10);
+    code = BufInfo_Add(bufferInfo, _VBO, sizeof(Vertex), 2, 0x10);
 
     if (code < 0)
         _log->PrintLine("!! ERROR !!: BufInfo_Add returned < 0");
@@ -88,16 +90,9 @@ void Engine::InitializeGraphics() {
 }
 
 void Engine::Update() {
-    // Move the sprite in a circle around the screen
-    _spriteAngle += TWO_PI / 120; // Rotate in a circle every ~2s (assuming 60fps)
-
-    Point diff = { std::cos(2 * _spriteAngle), std::sin(_spriteAngle) };
-
-    _sprite->MoveBy(diff);
+    for (IGameObject* obj : _objects)
+        obj->Update();
 }
-
-
-
 
 void Engine::Draw() {
     ++_frameCount;
@@ -108,17 +103,79 @@ void Engine::Draw() {
     // Update uniforms
     C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, _projectionInputHandle, &_projectionMatrix);
 
-    // C3D_ImmDrawBegin(GPU_TRIANGLES);
-    // {
-    //     for(int i = 0; i < 3; i++) 
-    //     {
-    //         C3D_ImmSendAttrib(vertex_list[i].x, vertex_list[i].y, vertex_list[i].z, 0);
-    //         C3D_ImmSendAttrib(vertex_list[i].r, vertex_list[i].g, vertex_list[i].b, 1.0f);
-    //     }
-    // }
-    // C3D_ImmDrawEnd();
-
     C3D_DrawArrays(GPU_TRIANGLES, 0, sizeof(Vertex) * Sprite::VerticesPerSprite());
 
     C3D_FrameEnd(0);
+}
+
+void Engine::AddObject(IGameObject* obj) {
+    if (_objects.size() < MAX_SPRITES)
+        _objects.push_back(obj);
+}
+
+Sprite* Engine::CreateSprite(Point size, Point sheetTL, Point sheetTR) {
+    Vertex* spriteEntry;
+    Sprite* sprite = nullptr;
+
+    if (_spriteCount < MAX_SPRITES) {
+        // Get the memory for the sprite
+        spriteEntry = _VBO + (_spriteCount * Sprite::VerticesPerSprite());
+        sprite = new Sprite(size, sheetTL, sheetTR, spriteEntry);
+
+        _spriteCount++;
+    }
+
+    return sprite;
+}
+
+void Engine::LoadSpritesheet() {
+    // Adapted from 3DS gpusprites example
+    // Load spritesheet from Spritesheet_png
+    u8* spritesheetData;
+    unsigned int width, height;
+    u8* gpu_spriteMemory;
+
+    // Decode the spritesheet
+    if (lodepng_decode32(&spritesheetData, &width, &height, Spritesheet_png, Spritesheet_png_size) != 0) {
+        _log->PrintLine("!! PROBLEM: lodepng failed !!");
+        return;
+    }
+
+    // Get w * h * 4 bytes per pixel of memory in a place
+    // the GPU likes
+    gpu_spriteMemory = (u8*)linearAlloc(width * height * 4);
+
+    // Rearrange the bytes for the 3ds
+    u8 r, g, b, a;
+    u8* src = spritesheetData;
+    u8* dest = gpu_spriteMemory;
+    
+    // This look reverses the order of the bytes in memory
+    for (u32 i = 0; i < width * height; i++) {
+        r = *src++;
+        g = *src++;
+        b = *src++;
+        a = *src++;
+
+        *dest++ = a;
+        *dest++ = b;
+        *dest++ = g;
+        *dest++ = r;
+    }
+
+    GSPGPU_FlushDataCache(gpu_spriteMemory, width * height * 4);
+
+    C3D_TexInit(&_spritesheet, width, height, GPU_RGB8);
+    C3D_SafeDisplayTransfer((u32*)gpu_spriteMemory, GX_BUFFER_DIM(width, height), (u32*)_spritesheet.data, GX_BUFFER_DIM(width, height), TEXTURE_TRANSFER_FLAGS);
+
+    gspWaitForPPF();
+
+    C3D_TexSetFilter(&_spritesheet, GPU_LINEAR, GPU_NEAREST);
+    
+    // Put the spritesheet on texture unit 0
+    C3D_TexBind(0, &_spritesheet);
+
+    // And clean up!
+    free(spritesheetData);
+    linearFree(gpu_spriteMemory);
 }

@@ -35,6 +35,10 @@
                 "/usr/lib64/gcc/x86_64-suse-linux/7/../../../../x86_64-suse-linux/include",
                 "/usr/include",
                 "/usr/local/bin/devkitPro/libctru/include",
+                "/usr/local/bin/devkitPro/devkitARM/arm-none-eabi/include",
+                "/usr/local/bin/devkitPro/devkitARM/arm-none-eabi/c++/7.1.0",
+                "/usr/local/bin/devkitPro/devkitARM/lib/gcc/arm-none-eabi/7.1.0/include",
+                "/usr/local/bin/devkitPro/devkitARM/lib/gcc/arm-none-eabi/7.1.0/include-fixed",
                 "${workspaceRoot}",
                 "${workspaceRoot}/build",
                 "${workspaceRoot}/include"
@@ -52,7 +56,13 @@
                     "/usr/lib64/gcc/x86_64-suse-linux/7/../../../../x86_64-suse-linux/include",
                     "/usr/include",
                     "/usr/local/bin/devkitPro/libctru/include",
-                    "${workspaceRoot}"
+                    "/usr/local/bin/devkitPro/devkitARM/arm-none-eabi/include",
+                    "/usr/local/bin/devkitPro/devkitARM/arm-none-eabi/c++/7.1.0",
+                    "/usr/local/bin/devkitPro/devkitARM/lib/gcc/arm-none-eabi/7.1.0/include",
+                    "/usr/local/bin/devkitPro/devkitARM/lib/gcc/arm-none-eabi/7.1.0/include-fixed",
+                    "${workspaceRoot}",
+                    "${workspaceRoot}/build",
+                    "${workspaceRoot}/include"
                 ],
                 "limitSymbolsToIncludedHeaders": true,
                 "databaseFilename": ""
