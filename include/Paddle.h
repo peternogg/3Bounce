@@ -1,23 +1,20 @@
 #pragma once
 
-#include <3ds.h>
-
 #include "Vector.h"
 #include "Engine.h"
 #include "Sprite.h"
 #include "IGameObject.h"
 
-class Ball : public IGameObject {
+class Paddle : public IGameObject {
 public:
-    Ball();
-    ~Ball();
+    Paddle();
+    ~Paddle();
 
     void Update();
     void Draw();
 private:
-    Vector2 _position;
     Vector2 _size;
-    Vector2 _velocity;
+    Vector2 _position;
 
     Sprite* _sprite;
 };

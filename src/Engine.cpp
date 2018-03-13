@@ -74,17 +74,27 @@ void Engine::InitializeGraphics() {
 
     // Configure fragment shader to pass color thru
     textureEnvironment = C3D_GetTexEnv(0);
-    C3D_TexEnvSrc(textureEnvironment, C3D_Both, GPU_TEXTURE0, 0, 0);
-    C3D_TexEnvOp(textureEnvironment, C3D_Both, 0, 0, 0);
-    C3D_TexEnvFunc(textureEnvironment, C3D_Both, GPU_REPLACE);
+    C3D_TexEnvSrc(textureEnvironment, C3D_Both, 
+        GPU_TEXTURE0,
+        GPU_FRAGMENT_PRIMARY_COLOR, 
+        GPU_PRIMARY_COLOR);
+
+    C3D_TexEnvOp(textureEnvironment, C3D_Both, 
+        GPU_TEVOP_RGB_SRC_COLOR, 
+        GPU_TEVOP_RGB_SRC_COLOR, 
+        GPU_TEVOP_RGB_SRC_COLOR);
+
+    C3D_TexEnvFunc(textureEnvironment, C3D_Both, GPU_BLEND_ADD);
 
     bufferInfo = C3D_GetBufInfo();
     BufInfo_Init(bufferInfo);
 
     code = BufInfo_Add(bufferInfo, _VBO, sizeof(Vertex), 2, 0x10);
 
+    //C3D_DepthTest(true, GPU_TESTFUNC::GPU_EQUAL, GPU_WRITEMASK::GPU_WRITE_ALL);
+
     if (code < 0)
-        _log->PrintLine("!! ERROR !!: BufInfo_Add returned < 0");
+        _log->PrintLine("!! ERROR !!: BufInfo_Add returned <0");
 
     _log->PrintLine("Initialized scene");
 }
@@ -103,7 +113,9 @@ void Engine::Draw() {
     // Update uniforms
     C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, _projectionInputHandle, &_projectionMatrix);
 
-    C3D_DrawArrays(GPU_TRIANGLES, 0, sizeof(Vertex) * Sprite::VerticesPerSprite());
+    // Draw the sprites
+    // Primitive, first index, count indicies
+    C3D_DrawArrays(GPU_TRIANGLES, 0, sizeof(Vertex) * Sprite::VerticesPerSprite() * _spriteCount);
 
     C3D_FrameEnd(0);
 }
@@ -113,14 +125,14 @@ void Engine::AddObject(IGameObject* obj) {
         _objects.push_back(obj);
 }
 
-Sprite* Engine::CreateSprite(Point size, Point sheetTL, Point sheetTR) {
+Sprite* Engine::CreateSprite(const Vector2& size, const Vector2& sheetTL, const Vector2& sheetBL) {
     Vertex* spriteEntry;
     Sprite* sprite = nullptr;
 
     if (_spriteCount < MAX_SPRITES) {
         // Get the memory for the sprite
         spriteEntry = _VBO + (_spriteCount * Sprite::VerticesPerSprite());
-        sprite = new Sprite(size, sheetTL, sheetTR, spriteEntry);
+        sprite = new Sprite(size, sheetTL, sheetBL, spriteEntry);
 
         _spriteCount++;
     }
@@ -150,7 +162,7 @@ void Engine::LoadSpritesheet() {
     u8* src = spritesheetData;
     u8* dest = gpu_spriteMemory;
     
-    // This look reverses the order of the bytes in memory
+    // This looks like it reverses the order of the bytes in memory
     for (u32 i = 0; i < width * height; i++) {
         r = *src++;
         g = *src++;
@@ -165,17 +177,21 @@ void Engine::LoadSpritesheet() {
 
     GSPGPU_FlushDataCache(gpu_spriteMemory, width * height * 4);
 
-    C3D_TexInit(&_spritesheet, width, height, GPU_RGB8);
+    C3D_TexInit(&_spritesheet, width, height, GPU_RGBA8);
     C3D_SafeDisplayTransfer((u32*)gpu_spriteMemory, GX_BUFFER_DIM(width, height), (u32*)_spritesheet.data, GX_BUFFER_DIM(width, height), TEXTURE_TRANSFER_FLAGS);
 
     gspWaitForPPF();
 
     C3D_TexSetFilter(&_spritesheet, GPU_LINEAR, GPU_NEAREST);
     
-    // Put the spritesheet on texture unit 0
+    // Put the spritesheet on texture unit 1
     C3D_TexBind(0, &_spritesheet);
 
     // And clean up!
     free(spritesheetData);
     linearFree(gpu_spriteMemory);
+}
+
+bool Engine::ButtonDown(u32 button) {
+    return button & hidKeysDown();
 }

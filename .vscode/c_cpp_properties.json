@@ -71,19 +71,30 @@
         {
             "name": "Win32",
             "includePath": [
-                "C:/Program Files (x86)/Microsoft Visual Studio 14.0/VC/include",
+                "C:/devkitPro/devkitARM/lib/gcc/arm-none-eabi/7.1.0/include",
+                "C:/devkitPro/devkitARM/arm-none-eabi/include/",
+                "C:/devkitArm/devkitPro/libctru/include",
+                "C:/devkitPro/devkitARM/arm-none-eabi/include/c++/7.1.0/",
+                "C:/devkitPro/devkitARM/arm-none-eabi/include/c++/7.1.0/arm-none-eabi",
+                "C:/devkitPro/libctru/include",
                 "${workspaceRoot}",
-                "C:/devkitArm/devkitPro/libctru/include"
+                "${workspaceRoot}/build",
+                "${workspaceRoot}/include"
             ],
             "defines": [
                 "_DEBUG",
                 "UNICODE"
             ],
-            "intelliSenseMode": "msvc-x64",
+            "intelliSenseMode": "clang-x64",
             "browse": {
                 "path": [
-                    "C:/Program Files (x86)/Microsoft Visual Studio 14.0/VC/include/*",
-                    "${workspaceRoot}"
+                    "C:/devkitPro/devkitARM/arm-none-eabi/include/",
+                    "C:/devkitPro/devkitARM/lib/gcc/arm-none-eabi/7.1.0/include",
+                    "C:/devkitPro/devkitARM/lib/gcc/arm-none-eabi/7.1.0/include-fixed",
+                    "C:/devkitPro/libctru/include",
+                    "${workspaceRoot}",
+                    "${workspaceRoot}/build",
+                    "${workspaceRoot}/include"
                 ],
                 "limitSymbolsToIncludedHeaders": true,
                 "databaseFilename": ""

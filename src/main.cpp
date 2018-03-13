@@ -8,6 +8,7 @@
 #include "Engine.h"
 #include "IGameObject.h"
 #include "Ball.h"
+#include "Paddle.h"
 
 using std::cout;
 using std::ifstream;
@@ -22,11 +23,13 @@ int main(int argc, char** argv) {
     Engine engine(&log);
     engine.InitializeGraphics();
     
+    Paddle paddle;
     Ball ball;
 
     bool shouldQuit = false;
 
     engine.AddObject(&ball);
+    engine.AddObject(&paddle);
 
     while(aptMainLoop() && !shouldQuit) {
 

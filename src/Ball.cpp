@@ -4,8 +4,14 @@
 #define SCREEN_HEIGHT 240
 
 Ball::Ball() 
-    : _sprite(Engine::Instance()->CreateSprite({128, 128}, {0, 0}, {1, 1})), _position({80, 80}), _size({128, 128}), _velocity({1, 1})
+    : _position({80, 80}), _size({40, 40}), _velocity({1, 1})
 {
+    _sprite = Engine::Instance()->CreateSprite(
+        _size, 
+        {40.f / 128.f, 0.f},  // Sprite sheet TL
+        {(40.f + 64.f) / 128.f, (0.f + 64.f) / 128.f} // Sprite sheet TR
+    );
+    
     _sprite->MoveTo(_position);
 }
 
@@ -29,5 +35,5 @@ void Ball::Update() {
 }
 
 void Ball::Draw() {
-
+    
 }

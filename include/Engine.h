@@ -29,7 +29,7 @@
                                 GX_TRANSFER_OUT_TILED(1)                             |\
                                 GX_TRANSFER_RAW_COPY(0)                              |\
 	                            GX_TRANSFER_IN_FORMAT(GX_TRANSFER_FMT_RGBA8)         |\
-                                GX_TRANSFER_OUT_FORMAT(GX_TRANSFER_FMT_RGB8)        |\
+                                GX_TRANSFER_OUT_FORMAT(GX_TRANSFER_FMT_RGBA8)        |\
 	                            GX_TRANSFER_SCALING(GX_TRANSFER_SCALE_NO))
 
 
@@ -53,8 +53,9 @@ public:
     void Draw();
 
     void AddObject(IGameObject* object);
-    Sprite* CreateSprite(Point size, Point sheetTL, Point sheetTR);
+    Sprite* CreateSprite(const Vector2& size, const Vector2& sheetTL, const Vector2& sheetBL);
     
+    bool ButtonDown(u32 button);
 private:
     static Engine* _instance;
 
