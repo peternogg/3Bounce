@@ -36,3 +36,6 @@ build/*
 *.3dsx
 *.elf
 *.smdh
+
+#VS Code stuff
+.vscode/*

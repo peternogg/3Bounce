@@ -33,7 +33,7 @@ void Engine::InitializeGraphics() {
     // Create the render target (where the rendered pixels go)
     _target = C3D_RenderTargetCreate(240, 400, GPU_RB_RGBA8, GPU_RB_DEPTH24_STENCIL8);
     // Set the render clearing parameters
-    C3D_RenderTargetSetClear(_target, C3D_CLEAR_ALL, BUFFER_CLEAR_COLOR, 0);
+    C3D_RenderTargetClear(_target, C3D_CLEAR_ALL, BUFFER_CLEAR_COLOR, 0);
     // Set render outputs
     C3D_RenderTargetSetOutput(_target, GFX_TOP, GFX_LEFT, COMMON_DISPLAY_TRANSFER_FLAGS);
 
@@ -79,12 +79,12 @@ void Engine::InitializeGraphics() {
         GPU_FRAGMENT_PRIMARY_COLOR, 
         GPU_PRIMARY_COLOR);
 
-    C3D_TexEnvOp(textureEnvironment, C3D_Both, 
+    C3D_TexEnvOpRgb(textureEnvironment, 
         GPU_TEVOP_RGB_SRC_COLOR, 
         GPU_TEVOP_RGB_SRC_COLOR, 
         GPU_TEVOP_RGB_SRC_COLOR);
 
-    C3D_TexEnvFunc(textureEnvironment, C3D_Both, GPU_BLEND_ADD);
+    C3D_TexEnvFunc(textureEnvironment, C3D_Both, GPU_COMBINEFUNC::GPU_ADD);
 
     bufferInfo = C3D_GetBufInfo();
     BufInfo_Init(bufferInfo);
@@ -178,7 +178,7 @@ void Engine::LoadSpritesheet() {
     GSPGPU_FlushDataCache(gpu_spriteMemory, width * height * 4);
 
     C3D_TexInit(&_spritesheet, width, height, GPU_RGBA8);
-    C3D_SafeDisplayTransfer((u32*)gpu_spriteMemory, GX_BUFFER_DIM(width, height), (u32*)_spritesheet.data, GX_BUFFER_DIM(width, height), TEXTURE_TRANSFER_FLAGS);
+    C3D_SyncDisplayTransfer((u32*)gpu_spriteMemory, GX_BUFFER_DIM(width, height), (u32*)_spritesheet.data, GX_BUFFER_DIM(width, height), TEXTURE_TRANSFER_FLAGS);
 
     gspWaitForPPF();
 
